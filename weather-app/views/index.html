@@ -7,29 +7,33 @@
 </head>
 <body>
   <h1>Weather App</h1>
-  <form id="searchForm">
+  <form id="weatherForm">
     <label for="city">Enter City:</label>
     <input type="text" id="city" name="city" required>
-    <button type="submit">Search</button>
+    <button type="submit">Get Weather</button>
   </form>
   <div id="weatherResult"></div>
-
+  
   <script>
-    document.getElementById('searchForm').addEventListener('submit', function (event) {
+    document.getElementById('weatherForm').addEventListener('submit', async function(event) {
       event.preventDefault();
+
       const city = document.getElementById('city').value;
-      fetch('/weather', {
+      const response = await fetch('/getWeather', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({ city }),
-      })
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('weatherResult').innerText = JSON.stringify(data, null, 2);
-      })
-      .catch(error => console.error('Error:', error));
+        body: new URLSearchParams({ city }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        document.getElementById('weatherResult').innerHTML = `<p>Temperature in ${city}: ${result.data.main.temp}°F</p><p>Feels Like: ${result.data.main.feels_like}°F</p><p>Humidity: ${result.data.main.humidity}<p>Description: ${result.data.weather[0].description}</p><p>Country: ${result.data.sys.country}</p>`;
+      } else {
+        document.getElementById('weatherResult').innerHTML = `<p>Error: ${result.error}</p>`;
+      }
     });
   </script>
 </body>
